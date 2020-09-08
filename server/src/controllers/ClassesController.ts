@@ -88,6 +88,8 @@ export default class ClassesController {
             // status 201 = criado com sucesso.
             return response.status(201).send();
         } catch (err) {
+            console.log(err);
+            
             // desfaz as mudanças.
             await trx.rollback();
     
