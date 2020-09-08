@@ -1,81 +1,11 @@
 import express from 'express';
-import db from './database/connection';
-import convertHourToMinutes from './utils/convertHourToMinutes';
+import ClassesController from './controllers/ClassesController';
 
 const routes = express.Router();
+const classesControllers = new ClassesController();
 
-interface ScheduleItem {
-    week_day: number;
-    from: string;
-    to: string;
-}
 
-// COMANDOS HTTP
-// GET: Buscar ou listar uma informação.
-// POST: Criar alguma nova informação.
-// PUT: Atualizar uma informação existente.
-// DELETE: Deleta uma informação existente.
-
-// PARAMETROS
-// Corpo (request body): Dados para criação ou atualização de um registro. request.body
-// Route Params: Identificar qual recurso eu quero atualizar ou deletar. request.params
-// Query Params: Paginação, filtros, ordenação. request.query
-
-routes.post('/classes', async (request, response) => {
-    const {
-        name,
-        avatar,
-        whatsapp,
-        bio,
-        subject,
-        cost,
-        schedule
-    } = request.body;
-
-    const trx = await db.transaction();
-
-    try {
-        const insertedUsersIds = await trx('users').insert({
-            name,
-            avatar,
-            whatsapp,
-            bio,
-        });
-    
-        const user_id = insertedUsersIds[0];
-    
-        const insertedClassesIds = await trx('classes').insert({
-            subject,
-            cost,
-            user_id,
-        });
-    
-        const class_id = insertedClassesIds[0];
-    
-        const classSchedule = schedule.map((scheduleItem: ScheduleItem) => {
-            return {
-                class_id,
-                week_day: scheduleItem.week_day,
-                from: convertHourToMinutes(scheduleItem.from),
-                to: convertHourToMinutes(scheduleItem.to)
-            };
-        })
-    
-        await trx('class_schedule').insert(classSchedule);
-    
-        // este é o momento que o transaction manda tudo de uma vez no db.
-        await trx.commit();
-    
-        // status 201 = criado com sucesso.
-        return response.status(201).send();
-    } catch (err) {
-        // desfaz as mudanças.
-        await trx.rollback();
-
-        return response.status(400).json({
-            error: 'Unexpected error while creating new class'
-        })
-    }
-});
+routes.post('/classes', classesControllers.create);
+routes.get('/classes', classesControllers.index);
 
 export default routes;
