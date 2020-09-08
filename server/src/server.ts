@@ -16,15 +16,8 @@ app.use(express.json());
 // Route Params: Identificar qual recurso eu quero atualizar ou deletar. request.params
 // Query Params: Paginação, filtros, ordenação. request.query
 
-app.get('/users', (request, response) => {
-    console.log(request.query);
-    
-    const users = [
-        {name: 'bruno', age: 26},
-        {name: 'he', age: 15},
-    ];
-    
-    return response.json(users);
+app.get('/', (request, response) => {
+    return response.json({message: "hello world"});
 });
 
 // porta padrão é número 80. Todos os sites tem no final mas é oculto.
